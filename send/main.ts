@@ -49,6 +49,7 @@ import { GZIP_MIN_GAIN_BYTES, gzipBytes, shouldTryGzip } from "../shared/compres
 import { statusLine } from "../shared/status-line";
 import { requestScreenWakeLock } from "../shared/wake-lock";
 import { wireShareDialog } from "../shared/share-dialog";
+import { MIN_REFRESH_CYCLES, bestFpsFor, refreshHzFromGaps } from "../shared/cadence";
 
 const MARGIN = 4; // quiet-zone modules
 const LOOKAHEAD = 3;
@@ -67,6 +68,7 @@ const paneFile = document.getElementById("pane-file")!;
 const paneSnippet = document.getElementById("pane-snippet")!;
 const modeInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="send-mode"]')];
 const streamSpecs = document.getElementById("stream-specs")!;
+const cadenceWarning = document.getElementById("cadence-warning")!;
 const footerHint = document.getElementById("footer-hint")!;
 const spec = (id: string) => document.getElementById(id)!;
 
@@ -75,7 +77,14 @@ const spec = (id: string) => document.getElementById(id)!;
 function showStreamPanels(visible: boolean): void {
   streamSpecs.hidden = !visible;
   footerHint.hidden = !visible;
+  // Always cleared, never revealed here: the cadence verdict needs a second of
+  // measurement, so it un-hides itself and only when it has something to say.
+  if (!visible) cadenceWarning.hidden = true;
 }
+
+/** The tx fps values the dropdown offers, so the cadence advice can only
+ *  ever name a value that is actually selectable. */
+const offeredTxFps = () => [...cfgFps.options].map((option) => Number(option.value));
 
 const openShareDialog = wireShareDialog();
 const cfgFps = document.getElementById("cfg-fps") as HTMLSelectElement;
@@ -720,6 +729,37 @@ async function startStream(revealStage = false) {
   let cellCursor = 0;
   let nextAt = performance.now();
   let lastTickAt = performance.now();
+
+  /**
+   * Measure the display's refresh rate instead of assuming it.
+   *
+   * A frame needs ≥2 refresh cycles on screen or a camera exposure straddles
+   * the transition and catches a torn code — at 60 fps on a 60 Hz panel every
+   * frame gets exactly one, and the catch rate collapses. That is invisible
+   * from the sending side: the stream looks perfect, the receiver just crawls.
+   * rAF fires once per refresh, so the median gap between callbacks IS the
+   * refresh period. Median, not mean: the first callbacks after a stream
+   * starts are lumpy with layout and QR generation, and one 200 ms hitch would
+   * drag an average into nonsense.
+   */
+  const refreshGaps: number[] = [];
+  let cadenceReported = false;
+  const reportCadence = () => {
+    cadenceReported = true;
+    const hz = refreshHzFromGaps(refreshGaps);
+    if (hz === undefined) return;
+    const cycles = hz / txFps;
+    spec("spec-fps").textContent =
+      `${txFps} fps${gridCodes > 1 ? ` × ${gridCodes} codes` : ""} · ${hz} Hz display`;
+    if (cycles >= MIN_REFRESH_CYCLES) return;
+    const better = bestFpsFor(hz, offeredTxFps());
+    cadenceWarning.textContent =
+      `This display refreshes at about ${hz} Hz, so each frame is on screen for ` +
+      `${cycles.toFixed(1)} refresh cycles — a camera needs 2 to catch it whole, and ` +
+      `below that it misses most frames no matter how good the light is.` +
+      (better ? ` Drop tx fps to ${better}: fewer frames, far more of them caught.` : "");
+    cadenceWarning.hidden = false;
+  };
   const tick = (now: number) => {
     // generatorFailed means no frame will ever be produced again, so stop the
     // rAF loop rather than spinning on an empty queue until a settings change.
@@ -734,6 +774,12 @@ async function startStream(revealStage = false) {
     // window; what we can do is tell the user exactly what happened.
     const sinceLastTick = now - lastTickAt;
     lastTickAt = now;
+    // Gaps far outside any real refresh period are throttling or a hitch, not
+    // the panel — sampling them would report a display nobody owns.
+    if (!cadenceReported && sinceLastTick > 1 && sinceLastTick < 100) {
+      refreshGaps.push(sinceLastTick);
+      if (refreshGaps.length >= 90) reportCadence();
+    }
     if (sinceLastTick > 1000) {
       setStatus(
         `Stream froze for ${(sinceLastTick / 1000).toFixed(1)} s — this window was hidden or ` +

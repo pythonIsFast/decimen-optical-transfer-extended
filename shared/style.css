@@ -350,6 +350,20 @@ details.settings input[type="range"] {
   min-width: 0;
 }
 
+/* The cadence verdict sits under the spec grid and has to be noticed without
+   shouting: this is advice about a setting, not a failure. Left-aligned
+   against .hint's centering because it is a sentence, not a caption. */
+.cadence-warning {
+  margin: 10px 0 2px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--red);
+  background: var(--panel-strong);
+  border-radius: 0 6px 6px 0;
+  color: var(--text-dim);
+  text-align: left;
+  max-width: none;
+}
+
 .stream-specs dt {
   color: var(--muted);
   font-size: 10px;

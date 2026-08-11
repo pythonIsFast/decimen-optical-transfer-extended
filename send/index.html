@@ -89,6 +89,11 @@
           <div><dt>compression</dt><dd id="spec-compression">—</dd></div>
           <div><dt>fountain blocks</dt><dd id="spec-k">—</dd></div>
         </dl>
+        <!-- Refresh-rate verdict, measured a second into the stream. Its own
+             element rather than the status line: on a 60 Hz display this
+             fires on every stream, and the status line carries the share
+             button that must survive. -->
+        <p class="hint cadence-warning" id="cadence-warning" hidden></p>
       </details>
       <div class="hint status-line" id="specs">Choose a file to begin</div>
       <dialog class="help-dialog share-dialog" id="share-dialog" aria-labelledby="share-title" data-share-title="Decimen Optical Transfer — receiver">
