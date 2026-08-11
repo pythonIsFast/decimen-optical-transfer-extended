@@ -1,6 +1,6 @@
 # Quick start
 
-1. Open [decimen.app](https://decimen.app/) on both devices.
+1. Open [pythonisfast.github.io/decimen-optical-transfer-extended](https://pythonisfast.github.io/decimen-optical-transfer-extended/) on both devices.
 2. On the sending device (a laptop is ideal): **Send**, pick a file. The QR stream starts immediately. Turn the screen brightness all the way up.
 3. On the receiving device (a phone): **Receive**, tap **Start camera**, point it at the code. Fill the camera view with it and prop the phone against something.
 4. When the bar completes, the file appears with a preview and a **Save** link — after its SHA-256 check passes.

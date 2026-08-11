@@ -35,7 +35,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       # SITE_URL is not decoration — the sender's "share receiver link" is built
-      # from it, so a build that still carries the upstream decimen.app would
+      # from it, so a build that still carries a hard-coded default would
       # send every scanned link to somebody else's site instead of this one.
       # Taking it from configure-pages means a project page, a user page and a
       # custom domain all come out right without editing this file.

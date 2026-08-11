@@ -23,14 +23,18 @@ import { rootPwaHead } from "./build/root-pwa-head";
 import { licenseBanner } from "./build/license-banner";
 import { diagnosticsEndpoint } from "./build/diagnostics-endpoint";
 
-// Where the site is published, used only to make the social-card URLs absolute
-// — scrapers are inconsistent about resolving relative ones. Override with
-// VITE_SITE_URL when deploying somewhere else; nothing else depends on it, and
-// the build still works under any subpath.
+// Where the site is published. This makes the social-card URLs absolute
+// (scrapers are inconsistent about resolving relative ones) and — the part
+// that is not cosmetic — it is what the sender's "share receiver link" hands
+// to the receiving phone, so a wrong value sends people to the wrong site.
+// Override with VITE_SITE_URL when deploying somewhere else; pages.yml passes
+// the deployment's own address. The build still works under any subpath.
+//
 // Normalised to exactly one trailing slash: the templates append paths to it
 // ("%SITE_URL%receive/"), and the value often arrives from a deploy step that
 // does not promise a trailing slash either way.
-const SITE_URL = (process.env.VITE_SITE_URL ?? "https://decimen.app/").replace(/\/*$/, "/");
+const DEFAULT_SITE_URL = "https://pythonisfast.github.io/decimen-optical-transfer-extended/";
+const SITE_URL = (process.env.VITE_SITE_URL ?? DEFAULT_SITE_URL).replace(/\/*$/, "/");
 
 // HTTPS always: the receiver needs getUserMedia, and on insecure origins
 // that API does not exist at all — a phone reaching this server over the LAN
@@ -95,8 +99,8 @@ export default defineConfig(({ mode }) => {
   if (standalone) {
     return {
       base: "./",
-      // The bundled demo PNGs are fetched by relative URL, which a single file
-      // has no way to satisfy — copying them here would just litter the output.
+      // A single self-contained file cannot satisfy a relative asset URL, so
+      // copying public/ here would just litter the output.
       publicDir: false,
       plugins: [
         htmlTokens(TOKENS),

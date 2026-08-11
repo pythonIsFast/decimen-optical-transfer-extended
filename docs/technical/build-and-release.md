@@ -15,7 +15,7 @@ npm run icons             # regenerate public/ icons from the logo (needs librsv
 
 `npm run icons` strips the logo SVG's comments before rasterizing (a `--` inside a comment is invalid XML that browsers tolerate but librsvg rejects) and does exact-match surgery on the markup, throwing if the logo changes shape.
 
-`VITE_SITE_URL` overrides the published URL baked into social cards and the share dialogs (default `https://decimen.app/`). A trailing slash is added if missing. `pages.yml` passes the deployment's own URL, so a Pages build never advertises somebody else's site.
+`VITE_SITE_URL` overrides the published URL baked into social cards and the share dialogs (default `https://pythonisfast.github.io/decimen-optical-transfer-extended/`). A trailing slash is added if missing. `pages.yml` passes the deployment's own URL, so a Pages build never advertises somebody else's site.
 
 ## PWA / service worker
 
