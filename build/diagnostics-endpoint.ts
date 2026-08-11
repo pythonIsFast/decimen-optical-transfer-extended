@@ -10,8 +10,7 @@ import { fileURLToPath } from "node:url";
  * this middleware pretty-prints it into the terminal running the dev server,
  * which makes A/B runs comparable without squinting at the phone. Every
  * report is also stamped (`_meta`: app version + receipt time) and saved to
- * the gitignored scratch/diagnostics-runs/ — record runs get promoted from
- * there into benchmarks/ (see build/benchmarks.ts).
+ * the gitignored scratch/diagnostics-runs/.
  *
  * `apply: "serve"` keeps the plugin out of every build pipeline, and the
  * client side of this contract (see finish() in receive/main.ts) is guarded by

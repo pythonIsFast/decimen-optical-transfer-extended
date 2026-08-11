@@ -24,4 +24,4 @@ Changing anything restarts the stream; the receiver resets automatically off the
 | error correction | L | the fountain layer handles erasures; L is the right trade at these sizes |
 | display size | 900 px | capped by the screen; fullscreen ignores it |
 
-Defaults favor the best-case demo. If a transfer crawls: bytes/frame → 1465, tx fps → 24, in that order.
+Defaults favor the best case. If a transfer crawls: bytes/frame → 1465, tx fps → 24, in that order.

@@ -25,14 +25,6 @@ This is the shape to use on a phone: it keeps a real `https://` origin, which is
 
 **The receiver's one caveat:** opened from `file://`, the page gets an opaque origin. Desktop Chrome and Firefox will generally prompt for the camera and work; **iOS Safari and Android Chrome will not give a local file a camera.** Since the receiver is usually the phone, serve the file over http(s) from anything — or use the hosted site's offline mode instead. The sender has no such problem; it works from `file://` everywhere.
 
-## Demo mode
-
-```bash
-npm run demo    # sender locked to the two bundled images
-```
-
-No file picker, no text box — for a sending machine sitting unattended in front of people. This is the dev server with `VITE_DEMO=1`, not a hardened kiosk: anyone with the keyboard has devtools.
-
 ## Why the dev server is https-only
 
 The receiver uses `getUserMedia`, and browsers remove that API entirely on insecure origins — a phone reaching your dev server over plain http has no camera, full stop (`localhost` is exempt; your phone isn't localhost). The dev server ships a self-signed certificate: tap through the warning once ("Show Details → visit this website" on iOS, "Advanced → Proceed" elsewhere) and the page is a secure context, so the camera works.

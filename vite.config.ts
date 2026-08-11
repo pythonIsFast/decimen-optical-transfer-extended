@@ -40,7 +40,6 @@ const SITE_URL = (process.env.VITE_SITE_URL ?? "https://decimen.app/").replace(/
 //
 // Modes:
 //   (default)           the site — three pages, PWA, offline after first visit
-//   demo                sender locked to the bundled payloads
 //   standalone-send     one self-contained decimen-sender.html
 //   standalone-receive  one self-contained decimen-receiver.html
 //
@@ -73,17 +72,11 @@ const selectOptions = (values: readonly number[], selected: number) =>
     .map((v) => (v === selected ? `<option selected>${v}</option>` : `<option>${v}</option>`))
     .join("");
 
-// The og-description speed claim reads the benchmark records at build time,
-// so the social-card text can never lag the published table.
-const topSustained = (
-  JSON.parse(readFileSync(resolve(__dirname, "benchmarks/records.json"), "utf8")) as {
-    sustained: { sustainedKBs: number } | null;
-  }
-).sustained;
-
 // One token set for every mode — the standalone pages carry these tokens too.
 const TOKENS = {
-  TOP_SPEED: topSustained ? `Up to ${Math.floor(topSustained.sustainedKBs)} KB/s` : "Hundreds of KB/s",
+  // Deliberately unquantified: this fork publishes no benchmark records, and a
+  // number nobody measured here would be a claim, not a fact.
+  TOP_SPEED: "Hundreds of KB/s",
   MAX_FILE_LABEL,
   MAX_SNIPPET_LABEL,
   SITE_URL,
@@ -165,10 +158,6 @@ export default defineConfig(({ mode }) => {
           // because only the hard reload bypasses the service worker.
           // clientsClaim() makes the new worker adopt open clients immediately.
           clientsClaim: true,
-          // success-2mb.png is exactly 2 MiB — right at workbox's per-file
-          // default — and benchmark.png adds another meg; the explicit
-          // ceiling removes the boundary edge and leaves headroom.
-          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
           globPatterns: ["**/*.{js,css,html,wasm,png,svg}"],
           // Received media plays from the Cache API at a real URL: iOS Safari
           // will not reliably play a blob: URL handed to <video>/<audio>, but

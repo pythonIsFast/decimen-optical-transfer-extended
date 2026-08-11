@@ -53,15 +53,6 @@ import { wireShareDialog } from "../shared/share-dialog";
 const MARGIN = 4; // quiet-zone modules
 const LOOKAHEAD = 3;
 
-// `npm run demo` (vite --mode demo). Locks the sender to the two bundled
-// payloads so the app can be left running in front of strangers without
-// handing them a file picker into the host machine.
-const DEMO = import.meta.env.VITE_DEMO === "1";
-// `npm run benchmark` (vite --mode benchmark). Same shape as demo mode but
-// locked to the canonical 1 MB benchmark payload, so every record run
-// transfers the exact bytes the promotion gate pins (build/benchmarks.ts).
-const BENCHMARK = import.meta.env.VITE_BENCHMARK === "1";
-
 const canvas = document.getElementById("qr") as HTMLCanvasElement;
 const stage = document.getElementById("stage") as HTMLDivElement;
 const specs = document.getElementById("specs")!;
@@ -74,8 +65,6 @@ const snippetLabel = document.getElementById("snippet-label")!;
 const sendSnippetBtn = document.getElementById("send-snippet") as HTMLButtonElement;
 const paneFile = document.getElementById("pane-file")!;
 const paneSnippet = document.getElementById("pane-snippet")!;
-const paneDemo = document.getElementById("pane-demo")!;
-const modePicker = document.getElementById("mode-picker")!;
 const modeInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="send-mode"]')];
 const streamSpecs = document.getElementById("stream-specs")!;
 const footerHint = document.getElementById("footer-hint")!;
@@ -202,17 +191,7 @@ function applyMode(): void {
   stage.hidden = true;
   showStreamPanels(false);
 
-  if (DEMO || BENCHMARK) {
-    modePicker.hidden = true;
-    paneFile.hidden = true;
-    paneSnippet.hidden = true;
-    paneDemo.hidden = false;
-    setStatus(BENCHMARK ? "Send the benchmark payload to begin" : "Choose a demo payload to begin");
-    return;
-  }
-
   const mode = currentMode();
-  paneDemo.hidden = true;
   paneFile.hidden = mode !== "file";
   paneSnippet.hidden = mode !== "snippet";
   // The heading used to say "Send a file" even with Text snippet selected.
@@ -279,16 +258,6 @@ async function startSelection(
   }
 }
 
-/** Demo payloads ship in public/, so they sit at the site root beside /send/. */
-async function selectDemo(fileName: string): Promise<void> {
-  await startSelection(`loading ${fileName}…`, async () => {
-    const response = await fetch(`../${fileName}`);
-    if (!response.ok) throw new Error(`could not load ${fileName} (${response.status})`);
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    return { mode: "single", name: fileName, size: bytes.length, packed: await packFile(fileName, "image/png", bytes) };
-  });
-}
-
 async function selectFile(): Promise<void> {
   const file = cfgFile.files?.[0];
   if (!file) return;
@@ -333,34 +302,19 @@ async function main() {
   snippetLabel.textContent = `Text to send · up to ${MAX_SNIPPET_LABEL}`;
 
   document.querySelector('.mode-nav a[href="../send/"]')?.setAttribute("aria-current", "page");
-  if (DEMO || BENCHMARK) {
-    const current = document.querySelector('.mode-nav a[href="../send/"]');
-    if (current) current.textContent = BENCHMARK ? "Benchmark" : "Demo";
-    const paneLabel = paneDemo.querySelector("span");
-    if (BENCHMARK && paneLabel) paneLabel.textContent = "Benchmark payload";
-    // Benchmark preset: 4 codes (2×2). The announcement records the actual
-    // settings either way; this just makes the canonical rig the default.
-    if (BENCHMARK) cfgGrid.value = "4";
-    for (const button of document.querySelectorAll<HTMLButtonElement>("[data-demo]")) {
-      // Benchmark mode shows only the canonical payload; demo mode hides it.
-      button.hidden = BENCHMARK ? !button.hasAttribute("data-benchmark") : button.hasAttribute("data-benchmark");
-      button.addEventListener("click", () => void selectDemo(button.dataset.demo!));
-    }
-  } else {
-    cfgFile.addEventListener("change", () => void selectFile());
-    // While a file is armed the picker label must NOT open the file dialog:
-    // preventDefault cancels the label→input forwarding, and only the button
-    // (or a keyboard activation of the hidden input, whose click bubbles up
-    // through the label) stops the stream.
-    paneFile.addEventListener("click", (event) => {
-      if (!paneFile.classList.contains("has-file")) return;
-      event.preventDefault();
-      const target = event.target instanceof Element ? event.target : null;
-      if (target && (target.closest(".file-picker-button") || target === cfgFile)) stopTransfer();
-    });
-    sendSnippetBtn.addEventListener("click", () => void selectSnippet());
-    for (const input of modeInputs) input.addEventListener("change", applyMode);
-  }
+  cfgFile.addEventListener("change", () => void selectFile());
+  // While a file is armed the picker label must NOT open the file dialog:
+  // preventDefault cancels the label→input forwarding, and only the button
+  // (or a keyboard activation of the hidden input, whose click bubbles up
+  // through the label) stops the stream.
+  paneFile.addEventListener("click", (event) => {
+    if (!paneFile.classList.contains("has-file")) return;
+    event.preventDefault();
+    const target = event.target instanceof Element ? event.target : null;
+    if (target && (target.closest(".file-picker-button") || target === cfgFile)) stopTransfer();
+  });
+  sendSnippetBtn.addEventListener("click", () => void selectSnippet());
+  for (const input of modeInputs) input.addEventListener("change", applyMode);
   applyMode();
   window.addEventListener("resize", () => resizeDisplay?.());
   for (const el of [cfgFps, cfgBytes, cfgEcc, cfgGrid, cfgSize]) {

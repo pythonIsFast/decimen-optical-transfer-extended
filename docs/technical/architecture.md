@@ -39,7 +39,6 @@ One file each, exact-match string surgery that **throws when it misses** — mar
 - `license-banner.ts` — prepends the version/license/source banner to every built artifact.
 - `diagnostics-endpoint.ts` — dev-only `/__diagnostics` collector behind `npm run diagnostics` (see [Diagnostics](diagnostics.md)).
 - `make-icons.ts` — regenerates `public/` icons from the logo (`npm run icons`, needs librsvg).
-- `benchmarks.ts` — promotes captured diagnostics runs to benchmark records and renders the README "Measured speed" section from `benchmarks/records.json` (see [Diagnostics](diagnostics.md)).
 
 ## Vendored decoder (`vendor/decimen-codec/`)
 

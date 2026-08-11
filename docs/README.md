@@ -6,7 +6,7 @@
 - [Sending](user/sending.md) — files, text snippets, transfer settings, fullscreen, sharing.
 - [Receiving](user/receiving.md) — camera, settings, what happens when a transfer lands.
 - [Troubleshooting](user/troubleshooting.md) — when nothing decodes.
-- [Install & offline](user/install-and-offline.md) — PWA install, offline use, standalone files, demo mode.
+- [Install & offline](user/install-and-offline.md) — PWA install, offline use, standalone files.
 - [Privacy](user/privacy.md) — what leaves the device (nothing), what persists (almost nothing).
 
 ## Technical
